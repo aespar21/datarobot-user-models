@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ##### Added
 - do predictions side effects check (when fitting a model)
 ##### Changes
-- `transform` mode now takes and returns both X and y, although passing y is optional.
+- `transform` mode now takes and returns both X and y. Passing y is not required if there is no downstream target.
 
 #### [1.4.6] - 2020-12-08
 ##### Added
