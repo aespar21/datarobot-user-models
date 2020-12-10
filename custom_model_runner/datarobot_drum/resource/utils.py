@@ -55,7 +55,9 @@ def _create_custom_model_dir(
     return custom_model_dir
 
 
-def _exec_shell_cmd(cmd, err_msg, assert_if_fail=True, process_obj_holder=None, env=os.environ):
+def _exec_shell_cmd(
+    cmd, err_msg, assert_if_fail=True, process_obj_holder=None, env=os.environ, verbose=True
+):
     """
     Wrapper used by tests and validation to run shell command.
     Can assert that the command does not fail (usually used for tests)
@@ -78,8 +80,9 @@ def _exec_shell_cmd(cmd, err_msg, assert_if_fail=True, process_obj_holder=None, 
         process_obj_holder.out_stream = stdout
         process_obj_holder.err_stream = stderr
 
-    print("stdout: {}".format(stdout))
-    print("stderr: {}".format(stderr))
+    if verbose:
+        print("stdout: {}".format(stdout))
+        print("stderr: {}".format(stderr))
     if assert_if_fail:
         assert p.returncode == 0, err_msg
 
