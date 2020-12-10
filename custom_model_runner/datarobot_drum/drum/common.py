@@ -170,6 +170,14 @@ class ArgumentsOptions:
     PUSH = "push"
 
 
+class ArgumentOptionsEnvVars:
+    TARGET_TYPE = "TARGET_TYPE"
+    CODE_DIR = "CODE_DIR"
+    NEGATIVE_CLASS_LABEL = "NEGATIVE_CLASS_LABEL"
+    POSITIVE_CLASS_LABEL = "POSITIVE_CLASS_LABEL"
+    CLASS_LABELS_FILE = "CLASS_LABELS_FILE"
+
+
 class RunMode(Enum):
     SCORE = ArgumentsOptions.SCORE
     SERVER = ArgumentsOptions.SERVER

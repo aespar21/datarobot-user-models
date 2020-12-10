@@ -6,7 +6,13 @@ import sys
 import subprocess
 
 from datarobot_drum.drum.description import version
-from datarobot_drum.drum.common import LOG_LEVELS, ArgumentsOptions, RunLanguage, TargetType
+from datarobot_drum.drum.common import (
+    LOG_LEVELS,
+    ArgumentsOptions,
+    RunLanguage,
+    TargetType,
+    ArgumentOptionsEnvVars,
+)
 
 
 class CMRunnerArgsRegistry(object):
@@ -185,7 +191,11 @@ class CMRunnerArgsRegistry(object):
                 "See --help option for more information"
             )
             labels = [ArgumentsOptions.POSITIVE_CLASS_LABEL, ArgumentsOptions.NEGATIVE_CLASS_LABEL]
-            if not all([x in sys.argv for x in labels]):
+            labels_in_env_vars = [
+                os.environ.get(ArgumentOptionsEnvVars.POSITIVE_CLASS_LABEL),
+                os.environ.get(ArgumentOptionsEnvVars.NEGATIVE_CLASS_LABEL),
+            ]
+            if not all([x in sys.argv for x in labels]) and not all(labels_in_env_vars):
                 raise argparse.ArgumentTypeError(error_message)
             return arg
 
@@ -193,19 +203,25 @@ class CMRunnerArgsRegistry(object):
             fit_intuit_message = ""
             prog_name_lst = CMRunnerArgsRegistry._tokenize_parser_prog(parser)
             if prog_name_lst[1] == ArgumentsOptions.FIT:
-                fit_intuit_message = "If you do not provide these labels, but your dataset is classification, DRUM will choose the labels for you"
+                fit_intuit_message = "If you do not provide these labels, but your dataset is classification, DRUM will choose the labels for you."
 
             parser.add_argument(
                 ArgumentsOptions.POSITIVE_CLASS_LABEL,
-                default=None,
+                default=os.environ.get(ArgumentOptionsEnvVars.POSITIVE_CLASS_LABEL),
                 type=are_both_labels_present,
-                help="Positive class label for a binary classification case. " + fit_intuit_message,
+                help="Positive class label for a binary classification case. The argument can also be provided by setting {} env var. ".format(
+                    ArgumentOptionsEnvVars.POSITIVE_CLASS_LABEL
+                )
+                + fit_intuit_message,
             )
             parser.add_argument(
                 ArgumentsOptions.NEGATIVE_CLASS_LABEL,
-                default=None,
+                default=os.environ.get(ArgumentOptionsEnvVars.NEGATIVE_CLASS_LABEL),
                 type=are_both_labels_present,
-                help="Negative class label for a binary classification case. " + fit_intuit_message,
+                help="Negative class label for a binary classification case. he argument can also be provided by setting {} env var. ".format(
+                    ArgumentOptionsEnvVars.NEGATIVE_CLASS_LABEL
+                )
+                + fit_intuit_message,
             )
 
     @staticmethod
@@ -264,10 +280,12 @@ class CMRunnerArgsRegistry(object):
 
             parser.add_argument(
                 ArgumentsOptions.CLASS_LABELS_FILE,
-                default=None,
+                default=os.environ.get(ArgumentOptionsEnvVars.CLASS_LABELS_FILE),
                 type=are_labels_double_specified,
                 action=ParseLabelsFile,
-                help="A file containing newline separated class labels for a multiclass classification case. "
+                help="A file containing newline separated class labels for a multiclass classification case. The argument can also be provided by setting {} env var. ".format(
+                    ArgumentOptionsEnvVars.CLASS_LABELS_FILE
+                )
                 + class_label_order_message
                 + fit_intuit_message,
             )
@@ -286,8 +304,8 @@ class CMRunnerArgsRegistry(object):
             parser.add_argument(
                 "-cd",
                 ArgumentsOptions.CODE_DIR,
-                default=None,
-                required=True,
+                default=os.environ.get(ArgumentOptionsEnvVars.CODE_DIR, None),
+                required=False,
                 type=type_callback,
                 help=help_message,
             )
@@ -517,8 +535,10 @@ class CMRunnerArgsRegistry(object):
                 ArgumentsOptions.TARGET_TYPE,
                 required=False,
                 choices=target_types,
-                default=None,
-                help="Target type",
+                default=os.environ.get(ArgumentOptionsEnvVars.TARGET_TYPE, None),
+                help="Target type. The argument can also be provided by setting {} env var.".format(
+                    ArgumentOptionsEnvVars.TARGET_TYPE
+                ),
             )
 
     @staticmethod
@@ -850,5 +870,13 @@ class CMRunnerArgsRegistry(object):
                 else:
                     if options.verbose:
                         print("uwsgi detected")
+
+        if options.code_dir is None:
+            print(
+                "Code directory is missing. It must be provided in either {} or {} env var.".format(
+                    ArgumentsOptions.CODE_DIR, ArgumentOptionsEnvVars.CODE_DIR
+                )
+            )
+            exit(1)
 
         CMRunnerArgsRegistry.verify_monitoring_options(options, options.subparser_name)
