@@ -1,8 +1,8 @@
 #!/bin/sh
-cd /opt/code/ || exit 1
-export PYTHONPATH=$PYTHONPATH:/opt/code
+#cd /opt/code/ || exit 1
+#export PYTHONPATH=$PYTHONPATH:/opt/code
 
-CMD="drum server -cd . --address 0.0.0.0:8080"
+CMD="drum server -cd /opt/code --address 0.0.0.0:8080"
 
 # Uncomment the following line to switch from Flask to uwsgi server
 # WITH_UWSGI="1"
